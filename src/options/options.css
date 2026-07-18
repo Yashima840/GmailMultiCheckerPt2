@@ -1,0 +1,103 @@
+:root {
+  --bg: #ffffff;
+  --fg: #202124;
+  --fg-sub: #5f6368;
+  --border: #dadce0;
+  --accent: #d93025;
+  --hover: #f5f5f5;
+  --warn: #b06000;
+  --ok: #188038;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #202124;
+    --fg: #e8eaed;
+    --fg-sub: #9aa0a6;
+    --border: #3c4043;
+    --accent: #f28b82;
+    --hover: #2d2e31;
+    --warn: #fdd663;
+    --ok: #81c995;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+  font-size: 14px;
+}
+
+h1 { font-size: 20px; font-weight: 600; }
+h2 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+
+section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.hint { color: var(--fg-sub); font-size: 12px; margin-top: 0; }
+code { background: var(--hover); padding: 1px 5px; border-radius: 3px; }
+
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; color: var(--fg-sub); margin-bottom: 3px; }
+
+input[type="text"],
+input[type="password"],
+input[type="number"] {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 13px;
+}
+input[type="number"] { width: 110px; }
+input[readonly] { background: var(--hover); color: var(--fg-sub); }
+
+.row { display: flex; gap: 10px; align-items: center; }
+.row > div { flex: 0 0 auto; }
+.row input[type="text"] { flex: 1; }
+
+.btn {
+  padding: 7px 16px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--hover); }
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn.primary:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+.status { font-size: 12px; }
+.status.ok { color: var(--ok); }
+.status.error { color: var(--warn); }
+
+#account-list { margin-top: 14px; }
+.account-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 4px;
+  border-top: 1px solid var(--border);
+}
+.account-item .email { font-weight: 600; }
+.account-item .meta { color: var(--fg-sub); font-size: 12px; flex: 1; }
+.account-item .reauth { color: var(--warn); font-size: 12px; font-weight: 600; }

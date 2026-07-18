@@ -1,0 +1,14 @@
+<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none">
+
+ <g>
+  <title>Layer 1</title>
+  <g stroke="null" id="svg_7">
+   <path stroke="#292D32" id="svg_1" stroke-linejoin="round" stroke-linecap="round" stroke-width="1.5" d="m12.6895,20.50929l7.87817,0l0,-7.87817c0,-3.37636 -0.86573,-4.24209 -4.24209,-4.24209l-7.87817,0l0,7.87817c0,3.37636 0.86573,4.24209 4.24209,4.24209z"/>
+   <path stroke="#292D32" id="svg_2" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1.5" d="m8.44741,8.38904l0,-2.5972"/>
+   <path stroke="#292D32" id="svg_3" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1.5" d="m8.44741,8.38904l-2.5972,0"/>
+   <path stroke="#292D32" id="svg_4" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1.5" d="m20.56767,20.50929l0,2.5972"/>
+   <path stroke="#292D32" id="svg_5" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1.5" d="m20.56767,20.50929l2.5972,0"/>
+  </g>
+  <path stroke="null" fill="#000000" d="m9.46848,2.63456l-8.76571,-2.57668c-0.04401,-0.01335 -0.08859,-0.01902 -0.13315,-0.01902c-0.1229,0 -0.24311,0.04844 -0.33296,0.13816c-0.12222,0.12158 -0.16808,0.30055 -0.11913,0.46539l2.57666,8.7678c0.0529,0.18209 0.21128,0.31511 0.40042,0.33554c0.01787,0.00186 0.03518,0.00254 0.05218,0.00254c0.17011,0 0.32793,-0.0923 0.41209,-0.24326l2.13474,-3.87039l3.86968,-2.13543c0.16678,-0.09166 0.2617,-0.27441 0.24081,-0.46294c-0.0203,-0.18897 -0.15294,-0.34759 -0.33563,-0.40172l0,0.00002z" id="svg_6"/>
+ </g>
+</svg>

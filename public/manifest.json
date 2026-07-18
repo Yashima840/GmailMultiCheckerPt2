@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Gmail Multi Checker",
+  "version": "0.1.0",
+  "description": "アカウント数無制限のGmail未読チェッカー。ポップアップでアカウント毎の未読を確認し、その場で既読・アーカイブ・削除。",
+  "permissions": ["identity", "storage", "alarms"],
+  "host_permissions": [
+    "https://gmail.googleapis.com/*",
+    "https://oauth2.googleapis.com/*",
+    "https://www.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Gmail Multi Checker",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

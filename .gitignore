@@ -1,0 +1,23 @@
+# 依存関係・ビルド成果物
+node_modules/
+dist/
+
+# ログ
+*.log
+npm-debug.log*
+
+# エディタ
+.vscode/
+.idea/
+*.code-workspace
+
+# OS が作る不要ファイル
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 秘密情報(現状ファイルには保存していないが、誤コミット防止の保険)
+.env
+.env.*
+*.pem
+*.key

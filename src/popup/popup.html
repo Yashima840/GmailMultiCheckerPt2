@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gmail Multi Checker</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <nav id="launcher" title="クリックでそのアカウントへ移動"></nav>
+    <div id="content">
+      <header>
+        <span class="app-title">Gmail Multi Checker</span>
+        <span class="spacer"></span>
+        <button id="btn-retention" class="icon-btn" title="アカウント保持メールを送信(各アカウントが自分宛に送信)">&#x1f6e1;</button>
+        <button id="btn-refresh" class="icon-btn" title="全アカウントを更新">&#x21bb;</button>
+        <button id="btn-options" class="icon-btn" title="設定">&#x2699;</button>
+      </header>
+      <main id="accounts"></main>
+    </div>
+    <button id="fab" title="メールを作成">&#xff0b;</button>
+    <div id="fab-menu" hidden></div>
+    <div id="toast" hidden></div>
+    <script type="module" src="./popup.ts"></script>
+  </body>
+</html>

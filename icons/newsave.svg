@@ -1,0 +1,14 @@
+<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <g>
+  <title>Layer 1</title>
+  <g stroke="null" id="svg_6">
+   <path stroke="null" d="m15.96013,22.92678l-12.89118,0a1.8416,1.82553 0 0 1 -1.8416,-1.82553l0,-12.77873a1.8416,1.82553 0 0 1 1.8416,-1.82553l10.12878,0l4.60399,4.56383l0,10.04043a1.8416,1.82553 0 0 1 -1.8416,1.82553z" id="svg_1"/>
+   <polyline stroke="null" points="14.118532635897068,22.926780700683594 14.118532635897068,15.624654769897461 4.910552557166355,15.624654769897461 4.910552557166355,22.926780700683594 " id="svg_2"/>
+   <polyline stroke="null" points="4.8750693041580035,6.602516174316406 4.8750693041580035,11.166346549987793 13.341443208690478,11.166346549987793 " id="svg_3"/>
+  </g>
+  <line stroke-linecap="round" stroke-linejoin="round" id="svg_9" y2="9.01205" x2="13.59036" y1="6.16867" x1="15.56626" stroke-width="0.8" stroke="#ffffff" fill="none"/>
+  <line transform="rotate(0.171973 17.2737 7.29697)" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" id="svg_10" y2="8.82286" x2="15.44235" y1="5.77107" x1="19.105" stroke-width="3" fill="none"/>
+  <path transform="rotate(2.43962 18.2612 5.78865)" stroke="#292D32" stroke-width="1.2" d="m18.09706,7.81445l4.79974,2.84239l-2.84224,-4.79088l2.84224,-4.9455l-4.38692,3.19631l-4.88434,-3.19631l2.70989,5.01071l-2.70989,4.72567l4.47153,-2.84239z" stroke-linecap="round" stroke-linejoin="round" id="svg_4"/>
+ </g>
+
+</svg>

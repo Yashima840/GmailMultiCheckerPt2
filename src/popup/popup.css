@@ -1,0 +1,486 @@
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --bg-page: #f1f3f4;
+  --launcher-bg: #e8eaed;
+  --fg: #202124;
+  --fg-sub: #5f6368;
+  --border: #e0e0e0;
+  --accent: #d93025;
+  --hover: #f5f5f5;
+  --header-bg: #f8f9fa;
+  --unread-bg: #fce8e6;
+  --warn: #b06000;
+  --star: #f4b400;
+  --shadow: 0 1px 3px rgba(60, 64, 67, 0.15), 0 1px 2px rgba(60, 64, 67, 0.1);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #202124;
+    --card: #2a2b2e;
+    --bg-page: #171717;
+    --launcher-bg: #202124;
+    --fg: #e8eaed;
+    --fg-sub: #9aa0a6;
+    --border: #3c4043;
+    --accent: #f28b82;
+    --hover: #35363a;
+    --header-bg: #292a2d;
+    --unread-bg: #3c2a29;
+    --warn: #fdd663;
+    --star: #fdd663;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  width: 484px;
+  max-height: 580px;
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  background: var(--bg-page);
+  color: var(--fg);
+  font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+  font-size: 13px;
+  overflow-y: auto;
+}
+/* ランチャー表示時はその幅ぶん左に余白を空け、固定ランチャーと重ならないようにする */
+body.has-launcher { padding-left: 42px; }
+
+/* ===== 左アカウントランチャー(スクロールに連動せず常に固定) ===== */
+#launcher {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 20;
+  width: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  background: var(--launcher-bg);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+#launcher:empty { display: none; }
+.launcher-item {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.launcher-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1;
+  user-select: none;
+}
+.launcher-item:hover .launcher-avatar {
+  box-shadow: 0 0 0 2px var(--launcher-bg), 0 0 0 4px var(--accent);
+}
+.launcher-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  border: 1.5px solid var(--launcher-bg);
+}
+.launcher-badge.zero { display: none; }
+.launcher-badge.warn { background: var(--warn); }
+
+/* ===== 右コンテンツ ===== */
+#content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+}
+.app-title { font-weight: 600; }
+.spacer { flex: 1; }
+
+.icon-btn {
+  border: none;
+  background: none;
+  color: var(--fg-sub);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 3px 7px;
+  border-radius: 4px;
+}
+.icon-btn:hover { background: var(--hover); color: var(--fg); }
+
+#accounts { padding: 8px; }
+
+/* ===== アカウント(スクロール対象) ===== */
+.account { scroll-margin-top: 44px; }
+.account + .account { margin-top: 4px; }
+
+/* アカウントヘッダ = 独立した角丸カード */
+.account-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  user-select: none;
+}
+.account-label {
+  font-weight: 600;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.account-label:hover { text-decoration: underline; }
+.account-email-sub {
+  color: var(--fg-sub);
+  font-size: 11px;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.account-email-sub:hover { text-decoration: underline; opacity: 1; }
+.account-count {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.account-count.zero { background: var(--fg-sub); }
+.account-count:hover { opacity: 0.8; }
+.account-count.loading { opacity: 0.5; }
+
+.btn-text {
+  border: none;
+  background: none;
+  color: var(--fg-sub);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.btn-text:hover { background: var(--hover); color: var(--fg); }
+
+.mail-list.collapsed { display: none; }
+
+.status-line {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  color: var(--fg-sub);
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.status-line.warn { color: var(--warn); }
+
+/* ===== メール1件 = 独立した角丸カード ===== */
+.mail-row {
+  margin-bottom: 8px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.mail-main {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.mail-main:hover { background: var(--hover); }
+
+.mail-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1;
+  user-select: none;
+}
+
+.mail-body { flex: 1; min-width: 0; }
+
+.mail-line1 { display: flex; gap: 8px; align-items: baseline; }
+.mail-from {
+  font-weight: 600;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mail-date { color: var(--fg-sub); font-size: 11px; flex-shrink: 0; }
+
+.mail-subject {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+.mail-snippet {
+  color: var(--fg-sub);
+  font-size: 12px;
+  margin-top: 2px;
+  /* 固定長スニペットを最大5行まで表示し、超える分は省略する */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  overflow: hidden;
+}
+
+/* 右端のスター */
+.mail-star {
+  flex-shrink: 0;
+  align-self: flex-start;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+  color: var(--fg-sub);
+  opacity: 0.7;
+}
+.mail-star:hover { opacity: 1; }
+.mail-star.on { color: var(--star); opacity: 1; }
+
+.mail-actions {
+  position: absolute;
+  right: 34px;
+  top: 6px;
+  display: none;
+  gap: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+.mail-main:hover .mail-actions { display: flex; }
+.mail-actions .icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+.mail-actions .icon-btn svg { width: 16px; height: 16px; display: block; }
+
+.mail-preview {
+  padding: 8px 12px;
+  border-top: 1px dashed var(--border);
+  max-height: 220px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
+  color: var(--fg);
+  background: var(--bg);
+}
+.mail-preview.loading { color: var(--fg-sub); }
+
+.empty-state {
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--fg-sub);
+}
+.empty-state button {
+  margin-top: 12px;
+  padding: 6px 16px;
+  border: none;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* ===== フロート作成ボタン(FAB) ===== */
+#fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--accent);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(60, 64, 67, 0.35);
+  z-index: 50;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+#fab:hover { box-shadow: 0 5px 14px rgba(60, 64, 67, 0.45); transform: translateY(-1px); }
+
+#fab-menu {
+  position: fixed;
+  right: 16px;
+  bottom: 72px;
+  z-index: 60;
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(60, 64, 67, 0.35);
+  padding: 4px;
+  min-width: 180px;
+  max-width: 260px;
+}
+.fab-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  color: var(--fg);
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fab-menu-item:hover { background: var(--hover); }
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  background: #323232;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  max-width: 90%;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.modal {
+  background: var(--card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 340px;
+  padding: 16px;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.modal-desc {
+  font-size: 12px;
+  color: var(--fg-sub);
+  margin-bottom: 12px;
+}
+
+.modal-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-actions .btn-primary {
+  color: #fff;
+  background: var(--accent);
+}
+
+.modal-actions .btn-primary:hover {
+  color: #fff;
+  background: var(--accent);
+  filter: brightness(1.08);
+}
