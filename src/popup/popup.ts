@@ -23,13 +23,67 @@ import {
   saveMailCacheFor,
   updateAccount,
 } from "../lib/storage";
-import { Account, MailItem } from "../lib/types";
+import { Account, MailBody, MailItem } from "../lib/types";
 
 const accountsEl = document.getElementById("accounts") as HTMLElement;
 const launcherEl = document.getElementById("launcher") as HTMLElement;
 const toastEl = document.getElementById("toast") as HTMLElement;
 const fabEl = document.getElementById("fab") as HTMLButtonElement;
 const fabMenuEl = document.getElementById("fab-menu") as HTMLElement;
+
+const readerEl = document.getElementById("reader") as HTMLElement;
+const readerFrame = document.getElementById("reader-frame") as HTMLIFrameElement;
+const readerSubjectEl = document.getElementById("reader-subject") as HTMLElement;
+const readerSubEl = document.getElementById("reader-sub") as HTMLElement;
+const readerBackEl = document.getElementById("reader-back") as HTMLButtonElement;
+const readerOpenEl = document.getElementById("reader-open") as HTMLButtonElement;
+readerOpenEl.innerHTML = recolorSvg(openSvg);
+
+// リーダーの「Gmailで開く」対象URL(開いているメールに追従)
+let readerOpenUrl = "";
+readerOpenEl.addEventListener("click", () => {
+  if (!readerOpenUrl) return;
+  void chrome.tabs.create({ url: readerOpenUrl });
+  window.close();
+});
+readerBackEl.addEventListener("click", closeReader);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && readerEl.classList.contains("open")) closeReader();
+});
+
+/** 本文リーダーページを閉じ、ポップアップを元の幅に戻す */
+function closeReader(): void {
+  readerEl.classList.remove("open");
+  document.body.classList.remove("reading");
+  readerEl.setAttribute("aria-hidden", "true");
+  // スライドアウト後にiframeを解放(閉じ直後に再度開かれていなければ)
+  window.setTimeout(() => {
+    if (!readerEl.classList.contains("open")) readerFrame.srcdoc = "";
+  }, 300);
+}
+
+/**
+ * メール本文を専用ページ(右からスライドイン)で開く。
+ * 本文HTMLをsandbox iframeにそのまま描画し、画像や文字サイズを再現する。
+ */
+function openReader(account: Account, mail: MailItem): void {
+  readerSubjectEl.textContent = mail.subject || "(件名なし)";
+  readerSubEl.textContent = `${parseFromName(mail.from)} ・ ${formatDate(mail.date)}`;
+  readerOpenUrl = `https://mail.google.com/mail/?authuser=${encodeURIComponent(
+    account.email,
+  )}#all/${mail.threadId}`;
+  readerFrame.srcdoc = messageDoc("本文を読み込み中…", "#5f6368");
+  document.body.classList.add("reading");
+  readerEl.classList.add("open");
+  readerEl.setAttribute("aria-hidden", "false");
+  getBody(account, mail.id)
+    .then((body) => {
+      readerFrame.srcdoc = buildReaderDoc(body);
+    })
+    .catch((err) => {
+      readerFrame.srcdoc = messageDoc(errorMessage(err), "#b06000");
+    });
+}
 
 document.getElementById("btn-options")!.addEventListener("click", () => {
   void chrome.runtime.openOptionsPage();
@@ -411,25 +465,10 @@ function createMailRow(account: Account, mail: MailItem, count: HTMLElement): HT
       });
   }
 
-  // 行クリックで本文プレビューを開閉(初回のみ取得)
-  let preview: HTMLElement | null = null;
+  // 行クリックで本文専用ページを開く(画像・文字サイズを再現して広く表示)
   main.addEventListener("click", (e) => {
     if ((e.target as HTMLElement).closest(".mail-actions")) return;
-    if (preview) {
-      preview.hidden = !preview.hidden;
-      return;
-    }
-    preview = el("div", "mail-preview loading", "本文を読み込み中…");
-    row.appendChild(preview);
-    getBody(account, mail.id)
-      .then((body) => {
-        preview!.classList.remove("loading");
-        preview!.textContent = body.isHtml ? htmlToText(body.text) : body.text.trim();
-      })
-      .catch((err) => {
-        preview!.classList.remove("loading");
-        preview!.textContent = errorMessage(err);
-      });
+    openReader(account, mail);
   });
 
   return row;
@@ -573,12 +612,55 @@ function decodeEntities(s: string): string {
   return doc.body.textContent ?? s;
 }
 
-/** HTML本文をプレーンテキスト化して安全に表示する */
-function htmlToText(html: string): string {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  doc.querySelectorAll("style, script, head").forEach((n) => n.remove());
-  const text = doc.body.textContent ?? "";
-  return text.replace(/\n{3,}/g, "\n\n").replace(/[ \t]{2,}/g, " ").trim();
+/** リーダーiframeに注入する共通ヘッダ(リンクは新規タブ・画像はレスポンシブ化) */
+function readerHead(): string {
+  return (
+    `<meta charset="utf-8">` +
+    `<meta name="viewport" content="width=device-width, initial-scale=1">` +
+    `<meta name="color-scheme" content="light">` +
+    `<base target="_blank">` +
+    `<style>` +
+    `html{-webkit-text-size-adjust:100%;}` +
+    `body{margin:0;padding:16px 18px;color:#202124;background:#fff;` +
+    `font-family:"Segoe UI","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;` +
+    `font-size:14px;line-height:1.6;word-break:break-word;overflow-wrap:anywhere;}` +
+    `img{max-width:100%;height:auto;}` +
+    `table{max-width:100%;}` +
+    `a{color:#1a73e8;}` +
+    `pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;margin:0;}` +
+    `</style>`
+  );
+}
+
+/** 本文(HTML/プレーン)をリーダーiframe用の完全なHTML文書に組み立てる */
+function buildReaderDoc(body: MailBody): string {
+  if (body.isHtml) {
+    // sandbox(allow-scripts無し)で描画するためスクリプトは実行されないが、明示的に除去しておく
+    const doc = new DOMParser().parseFromString(body.text, "text/html");
+    doc.querySelectorAll("script").forEach((n) => n.remove());
+    doc.head.insertAdjacentHTML("afterbegin", readerHead());
+    return "<!doctype html>" + doc.documentElement.outerHTML;
+  }
+  return (
+    `<!doctype html><html><head>${readerHead()}</head>` +
+    `<body><pre>${escapeHtml(body.text.trim())}</pre></body></html>`
+  );
+}
+
+/** 読み込み中・エラーなどの短いメッセージをリーダーiframe用の文書にする */
+function messageDoc(msg: string, color: string): string {
+  return (
+    `<!doctype html><html><head>${readerHead()}</head>` +
+    `<body style="color:${color}">${escapeHtml(msg)}</body></html>`
+  );
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
+  );
 }
 
 function errorMessage(e: unknown): string {

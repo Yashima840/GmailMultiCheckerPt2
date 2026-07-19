@@ -17,6 +17,23 @@
       </header>
       <main id="accounts"></main>
     </div>
+    <section id="reader" aria-hidden="true">
+      <header id="reader-header">
+        <button id="reader-back" class="icon-btn" title="戻る">&#x2190;</button>
+        <div class="reader-meta">
+          <div id="reader-subject" class="reader-subject"></div>
+          <div id="reader-sub" class="reader-sub"></div>
+        </div>
+        <button id="reader-open" class="icon-btn" title="Gmailで開く"></button>
+      </header>
+      <div id="reader-body">
+        <iframe
+          id="reader-frame"
+          sandbox="allow-popups allow-popups-to-escape-sandbox"
+          referrerpolicy="no-referrer"
+        ></iframe>
+      </div>
+    </section>
     <button id="fab" title="メールを作成">&#xff0b;</button>
     <div id="fab-menu" hidden></div>
     <div id="toast" hidden></div>
