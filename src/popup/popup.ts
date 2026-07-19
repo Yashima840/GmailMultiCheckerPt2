@@ -70,7 +70,8 @@ document.addEventListener("keydown", (e) => {
 function closeReader(): void {
   readerEl.classList.remove("open");
   document.body.classList.remove("reading");
-  readerEl.setAttribute("aria-hidden", "true");
+  // inertでフォーカスを内部から確実に外す(aria-hiddenだと支援技術の警告が出る)
+  readerEl.inert = true;
   readerStarDispose?.();
   readerStarDispose = null;
   // スライドアウト後にiframeを解放(閉じ直後に再度開かれていなければ)
@@ -112,7 +113,7 @@ function openReader(
   readerFrame.srcdoc = messageDoc("本文を読み込み中…", "#5f6368");
   document.body.classList.add("reading");
   readerEl.classList.add("open");
-  readerEl.setAttribute("aria-hidden", "false");
+  readerEl.inert = false;
   getBody(account, mail.id)
     .then((body) => {
       readerFrame.srcdoc = buildReaderDoc(body);
