@@ -211,6 +211,15 @@ header {
 }
 .btn-text:hover { background: var(--hover); color: var(--fg); }
 
+/* アカウントヘッダ内のアイコンボタン(Gmailを開く) */
+.account-header .icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+.account-header .icon-btn svg { width: 16px; height: 16px; display: block; }
+
 .mail-list.collapsed { display: none; }
 
 .status-line {

@@ -305,7 +305,14 @@ function createAccountSection(
   emailSub.hidden = !account.name;
   emailSub.title = "クリックで表示名を変更";
   const spacer = el("span", "spacer");
-  header.append(label, count, emailSub, spacer);
+  // このアカウントの受信トレイをGmailで開く。認証失効中でもブラウザ側では開けるので常に出す
+  const openBtn = svgIconButton(openSvg, "Gmailを開く", () => {
+    void chrome.tabs.create({
+      url: `https://mail.google.com/mail/?authuser=${encodeURIComponent(account.email)}`,
+    });
+    window.close();
+  });
+  header.append(label, count, emailSub, spacer, openBtn);
 
   const list = el("div", "mail-list");
   section.append(header, list);
