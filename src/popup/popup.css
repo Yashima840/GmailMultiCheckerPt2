@@ -354,7 +354,24 @@ body.reading { width: 760px; min-height: 560px; }
   border-bottom: 1px solid var(--border);
 }
 #reader-back { font-size: 20px; line-height: 1; }
-#reader-open svg { width: 18px; height: 18px; display: block; }
+#reader-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 2px;
+}
+#reader-actions .icon-btn,
+#reader-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+#reader-actions .icon-btn svg,
+#reader-open svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
 
 .reader-meta { flex: 1; min-width: 0; }
 .reader-subject {

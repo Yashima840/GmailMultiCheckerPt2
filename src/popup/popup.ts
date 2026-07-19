@@ -31,11 +31,19 @@ const toastEl = document.getElementById("toast") as HTMLElement;
 const fabEl = document.getElementById("fab") as HTMLButtonElement;
 const fabMenuEl = document.getElementById("fab-menu") as HTMLElement;
 
+/** カードと本文専用ページで共有するメール操作(アイコン・ツールチップ・実行) */
+interface MailAction {
+  svg: string;
+  title: string;
+  run: () => void;
+}
+
 const readerEl = document.getElementById("reader") as HTMLElement;
 const readerFrame = document.getElementById("reader-frame") as HTMLIFrameElement;
 const readerSubjectEl = document.getElementById("reader-subject") as HTMLElement;
 const readerSubEl = document.getElementById("reader-sub") as HTMLElement;
 const readerBackEl = document.getElementById("reader-back") as HTMLButtonElement;
+const readerActionsEl = document.getElementById("reader-actions") as HTMLElement;
 const readerOpenEl = document.getElementById("reader-open") as HTMLButtonElement;
 readerOpenEl.innerHTML = recolorSvg(openSvg);
 
@@ -66,12 +74,22 @@ function closeReader(): void {
  * メール本文を専用ページ(右からスライドイン)で開く。
  * 本文HTMLをsandbox iframeにそのまま描画し、画像や文字サイズを再現する。
  */
-function openReader(account: Account, mail: MailItem): void {
+function openReader(account: Account, mail: MailItem, actions: MailAction[]): void {
   readerSubjectEl.textContent = mail.subject || "(件名なし)";
   readerSubEl.textContent = `${parseFromName(mail.from)} ・ ${formatDate(mail.date)}`;
   readerOpenUrl = `https://mail.google.com/mail/?authuser=${encodeURIComponent(
     account.email,
   )}#all/${mail.threadId}`;
+  // カードと同じ操作ボタンをヘッダに並べる。実行したら一覧に戻す
+  readerActionsEl.textContent = "";
+  for (const a of actions) {
+    readerActionsEl.append(
+      svgIconButton(a.svg, a.title, () => {
+        closeReader();
+        a.run();
+      }),
+    );
+  }
   readerFrame.srcdoc = messageDoc("本文を読み込み中…", "#5f6368");
   document.body.classList.add("reading");
   readerEl.classList.add("open");
@@ -430,19 +448,24 @@ function createMailRow(account: Account, mail: MailItem, count: HTMLElement): HT
 
   main.append(avatar, body, createStar(account, mail));
 
+  const openInGmail = () => {
+    void chrome.tabs.create({
+      url: `https://mail.google.com/mail/?authuser=${encodeURIComponent(account.email)}#all/${mail.threadId}`,
+    });
+    window.close();
+  };
+
+  // カードと本文専用ページで共有するアクション定義(既読・アーカイブ等)
+  const mailActions: MailAction[] = [
+    { svg: archiveSvg, title: "アーカイブ", run: () => runAction(() => archive(account, mail.id)) },
+    { svg: spamSvg, title: "スパム報告", run: () => runAction(() => reportSpam(account, mail.id)) },
+    { svg: trashSvg, title: "削除(ゴミ箱へ)", run: () => runAction(() => trash(account, mail.id)) },
+    { svg: readSvg, title: "既読にする", run: () => runAction(() => markRead(account, [mail.id])) },
+  ];
+
   const actions = el("div", "mail-actions");
-  actions.append(
-    svgIconButton(archiveSvg, "アーカイブ", () => runAction(() => archive(account, mail.id))),
-    svgIconButton(spamSvg, "スパム報告", () => runAction(() => reportSpam(account, mail.id))),
-    svgIconButton(trashSvg, "削除(ゴミ箱へ)", () => runAction(() => trash(account, mail.id))),
-    svgIconButton(readSvg, "既読にする", () => runAction(() => markRead(account, [mail.id]))),
-    svgIconButton(openSvg, "Gmailで開く", () => {
-      void chrome.tabs.create({
-        url: `https://mail.google.com/mail/?authuser=${encodeURIComponent(account.email)}#all/${mail.threadId}`,
-      });
-      window.close();
-    }),
-  );
+  for (const a of mailActions) actions.append(svgIconButton(a.svg, a.title, a.run));
+  actions.append(svgIconButton(openSvg, "Gmailで開く", openInGmail));
   main.appendChild(actions);
   row.appendChild(main);
 
@@ -468,7 +491,7 @@ function createMailRow(account: Account, mail: MailItem, count: HTMLElement): HT
   // 行クリックで本文専用ページを開く(画像・文字サイズを再現して広く表示)
   main.addEventListener("click", (e) => {
     if ((e.target as HTMLElement).closest(".mail-actions")) return;
-    openReader(account, mail);
+    openReader(account, mail, mailActions);
   });
 
   return row;
