@@ -38,6 +38,11 @@ interface MailAction {
   run: () => void;
 }
 
+/** 1通分のスター状態。create()で状態を共有する新しいボタンを生成できる */
+interface StarSync {
+  create: () => { button: HTMLButtonElement; dispose: () => void };
+}
+
 const readerEl = document.getElementById("reader") as HTMLElement;
 const readerFrame = document.getElementById("reader-frame") as HTMLIFrameElement;
 const readerSubjectEl = document.getElementById("reader-subject") as HTMLElement;
@@ -49,6 +54,8 @@ readerOpenEl.innerHTML = recolorSvg(openSvg);
 
 // リーダーの「Gmailで開く」対象URL(開いているメールに追従)
 let readerOpenUrl = "";
+// リーダーのスターボタンをカードの同期対象から外すための後始末関数
+let readerStarDispose: (() => void) | null = null;
 readerOpenEl.addEventListener("click", () => {
   if (!readerOpenUrl) return;
   void chrome.tabs.create({ url: readerOpenUrl });
@@ -64,6 +71,8 @@ function closeReader(): void {
   readerEl.classList.remove("open");
   document.body.classList.remove("reading");
   readerEl.setAttribute("aria-hidden", "true");
+  readerStarDispose?.();
+  readerStarDispose = null;
   // スライドアウト後にiframeを解放(閉じ直後に再度開かれていなければ)
   window.setTimeout(() => {
     if (!readerEl.classList.contains("open")) readerFrame.srcdoc = "";
@@ -74,7 +83,12 @@ function closeReader(): void {
  * メール本文を専用ページ(右からスライドイン)で開く。
  * 本文HTMLをsandbox iframeにそのまま描画し、画像や文字サイズを再現する。
  */
-function openReader(account: Account, mail: MailItem, actions: MailAction[]): void {
+function openReader(
+  account: Account,
+  mail: MailItem,
+  actions: MailAction[],
+  starSync: StarSync,
+): void {
   readerSubjectEl.textContent = mail.subject || "(件名なし)";
   readerSubEl.textContent = `${parseFromName(mail.from)} ・ ${formatDate(mail.date)}`;
   readerOpenUrl = `https://mail.google.com/mail/?authuser=${encodeURIComponent(
@@ -82,6 +96,11 @@ function openReader(account: Account, mail: MailItem, actions: MailAction[]): vo
   )}#all/${mail.threadId}`;
   // カードと同じ操作ボタンをヘッダに並べる。実行したら一覧に戻す
   readerActionsEl.textContent = "";
+  // スター: カード側と状態を同期する専用ボタンを先頭に置く
+  readerStarDispose?.();
+  const { button: starButton, dispose } = starSync.create();
+  readerStarDispose = dispose;
+  readerActionsEl.append(starButton);
   for (const a of actions) {
     readerActionsEl.append(
       svgIconButton(a.svg, a.title, () => {
@@ -446,7 +465,8 @@ function createMailRow(account: Account, mail: MailItem, count: HTMLElement): HT
     el("div", "mail-snippet", decodeEntities(mail.snippet)),
   );
 
-  main.append(avatar, body, createStar(account, mail));
+  const starSync = createStarSync(account, mail);
+  main.append(avatar, body, starSync.create().button);
 
   const openInGmail = () => {
     void chrome.tabs.create({
@@ -491,7 +511,7 @@ function createMailRow(account: Account, mail: MailItem, count: HTMLElement): HT
   // 行クリックで本文専用ページを開く(画像・文字サイズを再現して広く表示)
   main.addEventListener("click", (e) => {
     if ((e.target as HTMLElement).closest(".mail-actions")) return;
-    openReader(account, mail, mailActions);
+    openReader(account, mail, mailActions, starSync);
   });
 
   return row;
@@ -577,27 +597,40 @@ function avatarInitial(s: string): string {
   return (m ? m[0] : "?").toUpperCase();
 }
 
-/** スターボタン。クリックで楽観的に表示を切り替え、失敗したら戻す */
-function createStar(account: Account, mail: MailItem): HTMLButtonElement {
-  const star = el("button", "mail-star") as HTMLButtonElement;
-  const paint = () => {
-    star.classList.toggle("on", mail.starred);
-    star.textContent = mail.starred ? "★" : "☆";
-    star.title = mail.starred ? "スターを外す" : "スターを付ける";
-  };
-  paint();
-  star.addEventListener("click", (e) => {
-    e.stopPropagation();
+/**
+ * 1通のメールのスター状態を、複数のボタン(カード・本文専用ページ)で同期させる。
+ * どれをクリックしても楽観的に切り替え、失敗したら全ボタンを元に戻す。
+ */
+function createStarSync(account: Account, mail: MailItem): StarSync {
+  const painters = new Set<() => void>();
+  const repaint = () => painters.forEach((p) => p());
+  const toggle = () => {
     const next = !mail.starred;
     mail.starred = next;
-    paint();
+    repaint();
     setStar(account, mail.id, next).catch((err) => {
       mail.starred = !next;
-      paint();
+      repaint();
       showToast(errorMessage(err));
     });
-  });
-  return star;
+  };
+  return {
+    create() {
+      const button = el("button", "mail-star") as HTMLButtonElement;
+      const paint = () => {
+        button.classList.toggle("on", mail.starred);
+        button.textContent = mail.starred ? "★" : "☆";
+        button.title = mail.starred ? "スターを外す" : "スターを付ける";
+      };
+      paint();
+      painters.add(paint);
+      button.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggle();
+      });
+      return { button, dispose: () => painters.delete(paint) };
+    },
+  };
 }
 
 function notifyBadge(): void {
